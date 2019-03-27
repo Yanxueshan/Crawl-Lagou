@@ -25,5 +25,5 @@ class LagouItem(scrapy.Item):
     position_desc = scrapy.Field()  # 职位描述
     workplace = scrapy.Field()  # 工作地点
     company_name = scrapy.Field()  # 公司名称
-    comany_url = scrapy.Field()  # 公司url地址
+    company_url = scrapy.Field()  # 公司url地址
     publish_date = scrapy.Field()  # 职位发布时间

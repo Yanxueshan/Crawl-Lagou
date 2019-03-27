@@ -4,10 +4,19 @@
 #
 # See documentation in:
 # https://doc.scrapy.org/en/latest/topics/spider-middleware.html
+import pickle
 
 from scrapy import signals
 from fake_useragent import UserAgent
 from libs.crawl_ip_proxy import Fetch_Proxy
+from scrapy.http import HtmlResponse
+from settings import BASE_DIR
+from selenium.webdriver.common.keys import Keys
+from chaojiying import Chaojiying_Client
+from scrapy.selector import Selector
+import re
+import time
+import requests
 
 
 class LagouSpiderMiddleware(object):
@@ -147,3 +156,35 @@ class ProxyIPDownloaderMiddleware(object):
             具体的设置IP代码的处理逻辑
         '''
         request.meta["proxy"] = self.fetch.get_random_ip()
+
+
+class RedirectDownloaderMiddleware(object):
+    '''
+        当拉勾网发现账号异常从而连接到认证页面时，需要识别验证码，通过该middleware进行拦截，对302进行处理
+    '''
+    def process_response(self, request, response, spider):
+        '''
+            对拉勾网重定向302的解决，捕捉到302URL，然后进行处理
+        '''
+        re_match = re.match('.*?/utrack/verify.*', response.url)
+        if re_match:
+            url = re_match.group(0)
+            # 向302URL发起请求，识别验证码，并继续访问
+            spider.browser.get(url)
+            while True:
+                selector = Selector(text=spider.browser.page_source)
+                captcha_url = selector.css('#captcha::attr(src)').extract_first('')
+                if not captcha_url:
+                    break
+                captcha_url = "https://www.lagou.com" + captcha_url
+                image = requests.get(captcha_url)
+
+                chaojiying = Chaojiying_Client('Yanxueshan', 'lingtian..1021', '898966')
+                result = chaojiying.PostPic(image.content, 1005)['pic_str']
+
+                spider.browser.find_element_by_css_selector("#code").send_keys(result)
+                spider.browser.find_element_by_css_selector("#submit").click()
+
+                return HtmlResponse(url=spider.browser.current_url, body=spider.browser.page_source,
+                            encoding="utf-8", request=request)
+        return response

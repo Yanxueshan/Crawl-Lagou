@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-
+import os
+import sys
 # Scrapy settings for Lagou project
 #
 # For simplicity, this file contains only settings considered important or
@@ -17,6 +18,7 @@ NEWSPIDER_MODULE = 'Lagou.spiders'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 # USER_AGENT = 'Lagou (+http://www.yourdomain.com)'
+# USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
@@ -27,13 +29,16 @@ ROBOTSTXT_OBEY = False
 # Configure a delay for requests for the same website (default: 0)
 # See https://doc.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-# DOWNLOAD_DELAY = 3
+DOWNLOAD_DELAY = 0.5
 # The download delay setting will honor only one of:
 # CONCURRENT_REQUESTS_PER_DOMAIN = 16
 # CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable cookies (enabled by default)
-# COOKIES_ENABLED = False
+COOKIES_ENABLED = True
+# COOKIES_DEBUG = True
+
+REDIRECT_ENABLED = False
 
 # Disable Telnet Console (enabled by default)
 # TELNETCONSOLE_ENABLED = False
@@ -47,17 +52,18 @@ ROBOTSTXT_OBEY = False
 # Enable or disable spider middlewares
 # See https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 SPIDER_MIDDLEWARES = {
-    'Lagou.middlewares.RandomUserAgentDownloaderMiddleware': 1,
-    'Lagou.middlewares.ProxyIPDownloaderMiddleware': 2,
-    'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
     'Lagou.middlewares.LagouSpiderMiddleware': 543,
 }
 
 # Enable or disable downloader middlewares
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
-# DOWNLOADER_MIDDLEWARES = {
-#    'Lagou.middlewares.LagouDownloaderMiddleware': 543,
-# }
+DOWNLOADER_MIDDLEWARES = {
+    'Lagou.middlewares.RandomUserAgentDownloaderMiddleware': 1,
+    # 'Lagou.middlewares.ProxyIPDownloaderMiddleware': 2,
+    'Lagou.middlewares.RedirectDownloaderMiddleware': 3,
+    'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
+    'Lagou.middlewares.LagouDownloaderMiddleware': 543,
+}
 
 # Enable or disable extensions
 # See https://doc.scrapy.org/en/latest/topics/extensions.html
@@ -69,7 +75,8 @@ SPIDER_MIDDLEWARES = {
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
     "Lagou.items.LagouItem": 1,
-    'Lagou.pipelines.MySQLPipeline': 2,
+    'Lagou.pipelines.MySQLPipeline': None,
+    'Lagou.pipelines.MySQLTwistedPipeline': 2,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -97,3 +104,6 @@ MYSQL_HOST = 'localhost'
 MYSQL_DBNAME = 'lagou'
 MYSQL_USER = 'root'
 MYSQL_PASSWORD = 'lingtian..1021'
+
+BASE_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+sys.path.insert(0, os.path.join(BASE_DIR, 'Lagou'))
