@@ -33,6 +33,9 @@ class LagouSpider(CrawlSpider):
 
     def __init__(self):
         # scrapy集成selenium
+        # chromedriver中有一些js变量会暴露，被服务器识别出来，所以保险起见，可以手动启动chromedriver
+        # 1. 找到chrome.exe文件所在路径，cmd中进入该路径，执行chrome.exe --remote-debugging-port=9222
+        # 2. 执行下列语句（执行第一步后要保证127.0.0.1:9222/json能够正常访问，在这之前需要退出所有的chrome）
         chrome_opt = Options()
         chrome_opt.add_argument("--disable-extensions")
         chrome_opt.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
@@ -70,12 +73,12 @@ class LagouSpider(CrawlSpider):
         return self.crawl_url_count
 
     def start_requests(self):
-        # chromedriver中有一些js变量会暴露，被服务器识别出来，所以需要手动启动chromedriver
-        # 1. 找到chrome.exe文件所在路径，cmd中进入该路径，执行chrome.exe --remote-debugging-port=9222
-        # 2. 执行下列语句（执行第一步时要保证127.0.0.1:9222/json能够正常访问，在这之前需要退出所有的chrome）
         # 需要注意的是cookies是有过期时间的，如果过期了如何解决？
         # 当拉勾网发现账号异常从而cookies失效时，或者cookies过期了，从而链接到登录页面时，需要通过middleware进行拦截，从而再次进行模拟登录
         # 实现思路：书写一个downloadermiddleware，重写process_response，如果response.url（重定向url）为登录页面url，则再次通过selenium进行模拟登录
+
+        # 另一个需要注意的问题是；当拉勾网检测到账号异常时，会跳转到认证页面，如何解决？
+        # 实现思路：书写一个downloadermiddleware，重写process_response，如果response.url包含verify，则进行验证码识别，通过selenium模拟操作
         cookies = []
         if os.path.exists(BASE_DIR+"/cookies/lagou.cookies"):
             cookies = pickle.load(open(BASE_DIR+"/cookies/lagou.cookies", "rb"))
