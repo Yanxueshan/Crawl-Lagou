@@ -103,7 +103,7 @@ ITEM_PIPELINES = {
 MYSQL_HOST = 'localhost'
 MYSQL_DBNAME = 'lagou'
 MYSQL_USER = 'root'
-MYSQL_PASSWORD = 'lingtian..1021'
+MYSQL_PASSWORD = 'root'
 
 BASE_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 sys.path.insert(0, os.path.join(BASE_DIR, 'Lagou'))
